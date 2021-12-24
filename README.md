@@ -55,7 +55,7 @@ slurm基本概念
 
 ## minimum working example
 
-### mwe00
+### MWE00
 
 查询partition状态
 
@@ -79,8 +79,6 @@ squeue --user=USERNAME #replace USERNAME with YOUR username
 
 `srun -p gpu-share -n1 nvidia-smi`
 
-`sbatch`打印`hello world`
-
 module相关
 
 ```bash
@@ -88,7 +86,7 @@ module avail
 module load xxx #replace xxx with what you want
 ```
 
-### mwe02 sbatch
+### MWE01 sbatch
 
 `my.script`
 
@@ -102,7 +100,7 @@ srun -l /bin/pwd
 
 `sbatch -p cpu-share -n4 -o my.stdout my.script`
 
-### mwe01 常用python库
+### MWE02 常用python库
 
 **WARNING**集群配置了module，其中包含anaconda，也许那是更推荐的使用方式，以下仅为个人走通的方式
 
