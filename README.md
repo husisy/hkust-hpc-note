@@ -1,5 +1,7 @@
 # HKUST HPC3
 
+**WARNING** do NOT put sensitive data in this repo, this repo might be public in the future
+
 这是**非官方**的超算使用指南
 
 1. link
