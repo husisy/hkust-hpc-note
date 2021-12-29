@@ -157,6 +157,39 @@ print(cp0 + cp1)
 1. 提交作业 `sbatch --partition=gpu-share --ntasks=1 -o my.stdout my.script`
 2. （大约稍等10秒）查看输出结果 `cat my.stdout`
 
+## The Recipe of How to Running Bash on Clusters
+***
+Two commends
+
+```sh
+ salloc -p gpu-share -N1 -n1 --gres=gpu:1 
+```
+
+- This one can help you to access the computing resource.
+- After your input it, the system will grant you a jobid. COPY IT!
+- It might take a while, if resources in short supply.
+- More information about arguments(like # of node, # of gpu, etc) can be find in 'salloc -h' 
+
+Now, you have a jobid, say it is 12345
+
+```sh
+srun --jobid=12345 --pty bash
+```
+
+After running it, you will find now your bash are in other node, and you can do whatever you want
+
+e.g.
+```sh
+(base) [someone@hhnode-ib-145 test]$ conda activate some_env 
+```
+
+BTW, remember kill the bash by using scancel when you don't need it anymore.
+
+```sh
+scancel 12345
+```
+
+
 ## TODO
 
 1. [ ] mpi
