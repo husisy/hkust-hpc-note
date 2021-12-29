@@ -53,6 +53,33 @@ slurm基本概念
 
 1. `RTX2080`, `11GB`, `250W`
 
+## 配置conda环境
+
+**WARNING**集群配置了module，其中包含anaconda，也许那是更推荐的使用方式，以下仅为个人走通的方式
+
+登录节点安装miniconda
+
+1. 下载`miniconda`
+   * 执行命令 `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
+2. 安装 `bash Miniconda3-latest-Linux-x86_64.sh` 空格翻页，最后输入`yes`接受使用条款
+3. 退出ssh登录再重新登录服务器方可生效
+4. 命令行前面会出现`(base)`表示当前处于`base`环境
+   * 强烈不建议使用`base`环境，因为`base`环境是conda用于管理自身的环境，一旦出现包兼容问题就只能重装conda，更建议创建新的环境，然后在新的环境中安装自己需要的包
+   * （建议）执行`conda config --set auto_activate_base false`
+5. 当你不再使用conda时，卸载conda：直接删除miniconda文件夹即可 `rm ~/miniconda3`
+6. 其他
+   * conda的更多使用说明见 [官方文档](https://docs.conda.io/en/latest/miniconda.html)，例如复制环境，升级包等
+   * conda包列表搜索见 [链接](https://anaconda.org/)，在这个网站可以确认某个包是否有win/mac/linux版本等，以及查找某个包的版本等信息
+
+创建`cuda113`环境
+
+```bash
+conda create -y -n cuda113
+conda install -y -n cuda113 -c conda-forge cudatoolkit=11.3
+conda install -y -n cuda113 -c pytorch pytorch torchvision torchaudio
+conda install -y -n cuda113 -c conda-forge cython ipython pytest matplotlib h5py pandas pylint jupyterlab pillow protobuf scipy requests tqdm lxml opt_einsum cupy nccl
+```
+
 ## minimum working example
 
 ### MWE00
@@ -79,6 +106,12 @@ squeue --user=USERNAME #replace USERNAME with YOUR username
 
 `srun -p gpu-share -n1 nvidia-smi`
 
+使用计算节点的bash
+
+```bash
+srun -p gpu-share -n1 bash
+```
+
 module相关
 
 ```bash
@@ -98,34 +131,64 @@ srun -l /bin/hostname
 srun -l /bin/pwd
 ```
 
-`sbatch -p cpu-share -n4 -o my.stdout my.script`
-
-### MWE02 常用python库
-
-**WARNING**集群配置了module，其中包含anaconda，也许那是更推荐的使用方式，以下仅为个人走通的方式
-
-登录节点安装miniconda
-
-1. 下载`miniconda`
-   * 执行命令 `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
-2. 安装 `bash Miniconda3-latest-Linux-x86_64.sh` 空格翻页，最后输入`yes`接受使用条款
-3. 退出ssh登录再重新登录服务器方可生效
-4. 命令行前面会出现`(base)`表示当前处于`base`环境
-   * 强烈不建议使用`base`环境，因为`base`环境是conda用于管理自身的环境，一旦出现包兼容问题就只能重装conda，更建议创建新的环境，然后在新的环境中安装自己需要的包
-   * （建议）执行`conda config --set auto_activate_base false`
-5. 当你不再使用conda时，卸载conda：直接删除miniconda文件夹即可 `rm ~/miniconda3`
-6. 其他
-   * conda的更多使用说明见 [官方文档](https://docs.conda.io/en/latest/miniconda.html)，例如复制环境，升级包等
-   * conda包列表搜索见 [链接](https://anaconda.org/)，在这个网站可以确认某个包是否有win/mac/linux版本等，以及查找某个包的版本等信息
-
-创建`cuda113`环境
+登录节点提交作业
 
 ```bash
-conda create -y -n cuda113
-conda install -y -n cuda113 -c conda-forge cudatoolkit=11.3
-conda install -y -n cuda113 -c pytorch pytorch torchvision torchaudio
-conda install -y -n cuda113 -c conda-forge cython ipython pytest matplotlib h5py pandas pylint jupyterlab pillow protobuf scipy requests tqdm lxml opt_einsum cupy nccl
+sbatch -p cpu-share -n4 -o my.stdout my.script
 ```
+
+### MWE02 访问计算节点的jupyter
+
+恶意占用计算资源**绝对不是**超算中心提倡的行为，**请勿**恶意占用计算资源，**务必**遵守超算中心的使用条款
+
+配置`.ssh/config`文件，内容见下方代码块
+
+1. 其中`HostName`中的ip可以通过命令`ip a`获取
+2. 配置成功后执行`ssh login-node`可以实现「登录节点登录登录节点」，以此验证文件配置正确
+
+`.ssh/config`
+
+```txt
+Host login-node
+  HostName 192.168.2.254
+  IdentityFile ~/.ssh/id_rsa
+```
+
+terminal1 登录节点
+
+```bash
+srun -p cpu-share -n1 bash
+. "/home/$USER/miniconda3/etc/profile.d/conda.sh"
+conda activate cuda113
+nohup jupyter lab --port=23333 > ~/jupyter_lab.log 2>&1 &
+ssh -NT -R 127.0.0.1:23333:127.0.0.1:23333 login-node
+```
+
+1. `srun -p cpu-share -n1 bash` 申请一个CPU计算资源，并执行bash进程，此时命令行会进入到`bash`交互式环境，等待输入但无`bash`提示符
+2. `. "/home/$USER/miniconda3/etc/profile.d/conda.sh"` 激活计算节点的conda环境
+3. `conda activate cuda113` 激活`cuda113`环境
+4. `nohup jupyter lab --port=23333 > ~/jupyter_lab.log 2>&1 &` 执行
+   * 也许你需要先配置password, see [link](https://jupyter-notebook.readthedocs.io/en/stable/public_server.html)
+   * 也许你需要添加`--no-browser`参数
+   * `nohup`将该行命令在后台执行
+   * 指定jupyter server运行在`23333`端口
+5. `ssh -NT -R 127.0.0.1:23333:127.0.0.1:23333 login-node`
+   * 从计算节点ssh登录至登录节点，同时`-R`将计算节点的`23333`端口转发至登录节点的`23333`端口
+   * [ubuntu doc - OpenSSH Server](https://help.ubuntu.com/lts/serverguide/openssh-server.html)
+   * [阮一峰 - SSH原理与运用一](http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html)
+   * [阮一峰 - SSH原理与运用二](http://www.ruanyifeng.com/blog/2011/12/ssh_port_forwarding.html)
+
+至此，你已经可以在vscode remote下访问该端口，如果你还需要在本地电脑上访问jupyter，见如下操作步骤
+
+terminal2 你的本地电脑。下方代码块将登录至登录节点，同时`-L`将登录节点的`23333`端口转发至本地电脑的`23333`端口，然后浏览器访问`127.0.0.1:23333`即可访问jupyter
+
+```bash
+ssh -L 127.0.0.1:23333:127.0.0.1:23333 USERNAME@hpc3.ust.hk #replace USERNAME with YOUR username
+```
+
+### MWE03 常用python库
+
+配置conda环境见上文
 
 文件结构
 
@@ -162,13 +225,13 @@ print(cp0 + cp1)
 Two commends
 
 ```sh
- salloc -p gpu-share -N1 -n1 --gres=gpu:1 
+ salloc -p gpu-share -N1 -n1 --gres=gpu:1
 ```
 
 - This one can help you to access the computing resource.
 - After your input it, the system will grant you a jobid. COPY IT!
 - It might take a while, if resources in short supply.
-- More information about arguments(like # of node, # of gpu, etc) can be find in 'salloc -h' 
+- More information about arguments(like # of node, # of gpu, etc) can be find in 'salloc -h'
 
 Now, you have a jobid, say it is 12345
 
@@ -180,7 +243,7 @@ After running it, you will find now your bash are in other node, and you can do 
 
 e.g.
 ```sh
-(base) [someone@hhnode-ib-145 test]$ conda activate some_env 
+(base) [someone@hhnode-ib-145 test]$ conda activate some_env
 ```
 
 BTW, remember kill the bash by using scancel when you don't need it anymore.
@@ -188,7 +251,6 @@ BTW, remember kill the bash by using scancel when you don't need it anymore.
 ```sh
 scancel 12345
 ```
-
 
 ## TODO
 
