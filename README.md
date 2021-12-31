@@ -80,6 +80,27 @@ conda install -y -n cuda113 -c pytorch pytorch torchvision torchaudio
 conda install -y -n cuda113 -c conda-forge cython ipython pytest matplotlib h5py pandas pylint jupyterlab pillow protobuf scipy requests tqdm lxml opt_einsum cupy nccl
 ```
 
+配置jupyter lab password
+
+1. see [link](https://jupyter-notebook.readthedocs.io/en/stable/public_server.html)
+2. 执行命令`jupyter notebook --generate-config`
+3. 执行命令`jupyter notebook password`，然后创建新密码即可
+
+## 配置ssh-R
+
+修改`.ssh/config`文件，添加内容见下方代码块
+
+1. 其中`HostName`中的ip可以通过在登录节点执行命令`ip a`获取
+2. 配置成功后在登录节点执行`ssh login-node`可以实现「登录节点登录登录节点」，以此验证文件配置正确
+
+`.ssh/config`
+
+```txt
+Host login-node
+  HostName 192.168.2.254
+  IdentityFile ~/.ssh/id_rsa
+```
+
 ## minimum working example
 
 ### MWE00
@@ -109,7 +130,7 @@ squeue --user=USERNAME #replace USERNAME with YOUR username
 使用计算节点的bash
 
 ```bash
-srun -p gpu-share -n1 bash
+srun -p gpu-share -n1 --pty bash
 ```
 
 module相关
@@ -141,49 +162,50 @@ sbatch -p cpu-share -n4 -o my.stdout my.script
 
 恶意占用计算资源**绝对不是**超算中心提倡的行为，**请勿**恶意占用计算资源，**务必**遵守超算中心的使用条款
 
-配置`.ssh/config`文件，内容见下方代码块
+**警告**：如果你不清楚以下的每一条命令具体在做什么，请**不要**尝试slurm同时提交多个任务（即`--nodes=2 --ntasks=4`参数），存在端口冲突、文件冲突等问题，**甚至可能**会把你的用户文件、conda环境等弄坏，由此导致的后果概不负责
 
-1. 其中`HostName`中的ip可以通过命令`ip a`获取
-2. 配置成功后执行`ssh login-node`可以实现「登录节点登录登录节点」，以此验证文件配置正确
-
-`.ssh/config`
-
-```txt
-Host login-node
-  HostName 192.168.2.254
-  IdentityFile ~/.ssh/id_rsa
-```
-
-terminal1 登录节点
+**务必**先完成上方「配置conda环境」和「配置ssh-R」，文件结构见下
 
 ```bash
-srun -p cpu-share -n1 bash
-. "/home/$USER/miniconda3/etc/profile.d/conda.sh"
-conda activate cuda113
-nohup jupyter lab --port=23333 > ~/jupyter_lab.log 2>&1 &
-ssh -NT -R 127.0.0.1:23333:127.0.0.1:23333 login-node
+~/hpc3-setup
+├── UID/
+│   ├── jupyter_lab.log
+│   ├── ssh.log
+│   └── ...
+├── setup_jupyter.sh
+├── stop_task.sh
+└── ...
 ```
 
-1. `srun -p cpu-share -n1 bash` 申请一个CPU计算资源，并执行bash进程，此时命令行会进入到`bash`交互式环境，等待输入但无`bash`提示符
-2. `. "/home/$USER/miniconda3/etc/profile.d/conda.sh"` 激活计算节点的conda环境
-3. `conda activate cuda113` 激活`cuda113`环境
-4. `nohup jupyter lab --port=23333 > ~/jupyter_lab.log 2>&1 &` 执行
-   * 也许你需要先配置password, see [link](https://jupyter-notebook.readthedocs.io/en/stable/public_server.html)
-   * 也许你需要添加`--no-browser`参数
-   * `nohup`将该行命令在后台执行
-   * 指定jupyter server运行在`23333`端口
-5. `ssh -NT -R 127.0.0.1:23333:127.0.0.1:23333 login-node`
-   * 从计算节点ssh登录至登录节点，同时`-R`将计算节点的`23333`端口转发至登录节点的`23333`端口
-   * [ubuntu doc - OpenSSH Server](https://help.ubuntu.com/lts/serverguide/openssh-server.html)
-   * [阮一峰 - SSH原理与运用一](http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html)
-   * [阮一峰 - SSH原理与运用二](http://www.ruanyifeng.com/blog/2011/12/ssh_port_forwarding.html)
+你需要进行如下操作
 
-至此，你已经可以在vscode remote下访问该端口，如果你还需要在本地电脑上访问jupyter，见如下操作步骤
-
-terminal2 你的本地电脑。下方代码块将登录至登录节点，同时`-L`将登录节点的`23333`端口转发至本地电脑的`23333`端口，然后浏览器访问`127.0.0.1:23333`即可访问jupyter
+1. 创建`~/hpc3-setup`文件夹
+2. 将当仓库的`setup_jupyter.sh`文件复制到登录节点`~/hpc3-setup/setup_jupyter.sh`
+3. 将当仓库的`stop_task.sh`文件复制到登录节点`~/hpc3-setup/stop_task.sh`
+4. 说明
+   * `~/hpc3-setup/UID`是每次运行`setup_jupyter.sh`产生的日志文件，其中UID由时间以及进程ID组成，保证每次运行不冲突
+   * `~/hpc3-setup/UID/jupyter_lab.log`是jupyter lab的运行日志，可用于调试
+   * `~/hpc3-setup/UID/ssh.log`是ssh的运行日志，可用于调试
+5. terminal-1 在登录节点的`~/hpc3-setup/`目录执行命令`srun -p cpu-share -n1 bash setup_jupyter.sh`
+   * 说明：如果上述命令运行成功，jupyter lab已经在计算节点的`23333`端口运行，同时转发至登录节点的`23334`端口
+   * 说明：执行该命令会使得当前terminal处于运行状态，所以下一步骤需要另一个terminal
+   * 关于该命令的详细说明见该仓库`hpc3-setup/README.md`
+   * 至此，你的vscode-remote已经可以访问登录节点的`23334`端口来访问jupyter
+6. terminal-2 在你的电脑（本机）上执行 `ssh -L 127.0.0.1:23335:127.0.0.1:23334 USERNAME@hpc3.ust.hk`
+   * 将上述的`USERNAME`替换为你的用户名
+   * 说明：如果上述命令运行成功，登录节点的`23334`端口已转发至你电脑的`23335`端口
+   * 至此，你可以在浏览器进入`127.0.0.1:23335`来访问jupyter
+7. 结束任务
+   * 方法1: 在terminal-1多次输入`ctrl-C`来强制中止
+   * 方法2: `scancel xxx`, `xxx`为slurm的task ID
+   * 方法3: 在jupyter的terminal中，切换至`~/hpc3-setup`目录，执行`bash stop_tash.sh`，执行之前**务必**保存所有jupyter内容，输出内容类似于下方代码块
 
 ```bash
-ssh -L 127.0.0.1:23333:127.0.0.1:23333 USERNAME@hpc3.ust.hk #replace USERNAME with YOUR username
+$ srun -p gpu-share -n1 bash setup_jupyter.sh
+[setup_jupyter.sh] jupyter and ssh-R is running
+setup_jupyter.sh: line 16: 24198 Terminated              sleep 7d
+[setup_jupyter.sh] goodbye
+$
 ```
 
 ### MWE03 常用python库
