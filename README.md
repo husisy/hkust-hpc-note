@@ -140,6 +140,11 @@ module avail
 module load xxx #replace xxx with what you want
 ```
 
+gpu node
+
+1. indirect login: ssh to `hpc3.ust.hk`, then use `ssh login-1`
+2. direct login: ssh to `xgpu.ust.hk`, `xgpu` and `login-1` is the same node and it is for user to test some GPU program
+
 ### MWE01 sbatch
 
 `my.script`
