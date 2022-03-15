@@ -6,7 +6,7 @@
 
 1. link
    * [homepage](https://itsc.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/hpc3-cluster)
-   * [faq](https://itsc.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/hpc3-cluster/hpc3-cluster-faq)
+   * [faq](https://itsc.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/hpc3-cluster/hpc3-cluster-faq) **official** documentation
    * [slurm-intro](https://itsc.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/hpc3-cluster/jobs)
    * [slurm-tutorial](https://slurm.schedmd.com/tutorials.html)
 2. 申请账号 [link](https://itsc.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/hpc3-cluster/account)
@@ -290,3 +290,131 @@ scancel 12345
 ## contribution
 
 欢迎贡献更多使用示例
+
+`cpu-share`
+
+```bash
+[hhnode-ib-27 ~]$ lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                40
+On-line CPU(s) list:   0-39
+Thread(s) per core:    1
+Core(s) per socket:    20
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 85
+Model name:            Intel(R) Xeon(R) Gold 6230 CPU @ 2.10GHz
+Stepping:              7
+CPU MHz:               2652.941
+CPU max MHz:           3900.0000
+CPU min MHz:           800.0000
+BogoMIPS:              4200.00
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              1024K
+L3 cache:              28160K
+NUMA node0 CPU(s):     0-19
+NUMA node1 CPU(s):     20-39
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb cat_l3 cdp_l3 intel_ppin intel_pt ssbd mba ibrs ibpb stibp ibrs_enhanced tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm cqm mpx rdt_a avx512f avx512dq rdseed adx smap clflushopt clwb avx512cd avx512bw avx512vl xsaveopt xsavec xgetbv1 cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local dtherm ida arat pln pts hwp hwp_act_window hwp_epp hwp_pkg_req pku ospke avx512_vnni md_clear spec_ctrl intel_stibp flush_l1d arch_capabilities
+[hhnode-ib-27 ~]$ free -h
+              total        used        free      shared  buff/cache   available
+Mem:           187G        178G        8.1G        253M        732M        7.9G
+Swap:          4.0G        4.0G        2.7M
+```
+
+`gpu-share`
+
+```bash
+[hhnode-ib-105 ~]$ nvidia-smi
+Tue Mar 15 13:06:56 2022
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 460.67       Driver Version: 460.67       CUDA Version: 11.2     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  GeForce RTX 208...  On   | 00000000:3D:00.0 Off |                  N/A |
+| 30%   45C    P2    84W / 250W |   5512MiB / 11019MiB |     90%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  GeForce RTX 208...  On   | 00000000:3E:00.0 Off |                  N/A |
+| 43%   50C    P2    78W / 250W |   5418MiB / 11019MiB |     66%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  GeForce RTX 208...  On   | 00000000:40:00.0 Off |                  N/A |
+| 25%   46C    P2   225W / 250W |   5512MiB / 11019MiB |     54%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   3  GeForce RTX 208...  On   | 00000000:41:00.0 Off |                  N/A |
+| 27%   47C    P2   268W / 250W |   5418MiB / 11019MiB |     51%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   4  GeForce RTX 208...  On   | 00000000:B1:00.0 Off |                  N/A |
+| 22%   41C    P2   244W / 250W |   5512MiB / 11019MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   5  GeForce RTX 208...  On   | 00000000:B2:00.0 Off |                  N/A |
+| 42%   52C    P2   239W / 250W |   5418MiB / 11019MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   6  GeForce RTX 208...  On   | 00000000:B4:00.0 Off |                  N/A |
+| 30%   50C    P2   147W / 250W |   5512MiB / 11019MiB |     84%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   7  GeForce RTX 208...  On   | 00000000:B5:00.0 Off |                  N/A |
+| 35%   54C    P2   198W / 250W |   5418MiB / 11019MiB |     75%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|    0   N/A  N/A     83391      C   python3                          5505MiB |
+|    1   N/A  N/A     83391      C   python3                          5411MiB |
+|    2   N/A  N/A    108711      C   python3                          5505MiB |
+|    3   N/A  N/A    108711      C   python3                          5411MiB |
+|    4   N/A  N/A     95655      C   python3                          5505MiB |
+|    5   N/A  N/A     95655      C   python3                          5411MiB |
+|    6   N/A  N/A    100027      C   python3                          5505MiB |
+|    7   N/A  N/A    100027      C   python3                          5411MiB |
++-----------------------------------------------------------------------------+
+[hhnode-ib-105 ~]$ lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                16
+On-line CPU(s) list:   0-15
+Thread(s) per core:    1
+Core(s) per socket:    8
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 85
+Model name:            Intel(R) Xeon(R) Gold 6244 CPU @ 3.60GHz
+Stepping:              7
+CPU MHz:               4184.912
+CPU max MHz:           4400.0000
+CPU min MHz:           1200.0000
+BogoMIPS:              7200.00
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              1024K
+L3 cache:              25344K
+NUMA node0 CPU(s):     0-7
+NUMA node1 CPU(s):     8-15
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb cat_l3 cdp_l3 intel_ppin intel_pt ssbd mba ibrs ibpb stibp ibrs_enhanced tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm cqm mpx rdt_a avx512f avx512dq rdseed adx smap clflushopt clwb avx512cd avx512bw avx512vl xsaveopt xsavec xgetbv1 cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local dtherm ida arat pln pts hwp hwp_act_window hwp_epp hwp_pkg_req pku ospke avx512_vnni md_clear spec_ctrl intel_stibp flush_l1d arch_capabilities
+[hhnode-ib-105 ~]$ free -h
+              total        used        free      shared  buff/cache   available
+Mem:           376G         32G        330G        9.3G         13G        333G
+Swap:          4.0G        2.1G        1.9G
+```
