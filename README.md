@@ -1,6 +1,6 @@
 # HKUST High Performance Computer Cluster Usage
 
-The content in this repository is just perssonal notes NOT official documentations about the usage of the HKUST HPC cluster. **USE THIS REPO AT YOUR OWN RISK**.
+The content in this repository is just perssonal notes about the usage of the HKUST HPC cluster, NOT official documentations. **USE THIS REPO AT YOUR OWN RISK**.
 
 这个仓库的内容仅是关于HKUST超算的个人笔记**而非官方文档**，使用该仓库内容而导致的任何后果**概不负责**，包括但不限于数据丢失、错误计算等
 
