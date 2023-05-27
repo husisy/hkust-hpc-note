@@ -9,4 +9,4 @@ The content in this repository is just perssonal notes about the usage of the HK
 1. HKUST-HPC3：见`hpc3/`
 2. TACC：见`tacc/`
 3. （非HKUST超算）曙光智算：见`sugon/`
-4. （非HKUST超算）智能云
+4. （非HKUST超算）超算云：见`paratera`
