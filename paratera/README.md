@@ -165,6 +165,11 @@ custom_channels:
   simpleitk: https://mirrors.bfsu.edu.cn/anaconda/cloud
 ```
 
+```bash
+micromamba create -n nocuda
+micromamba install -y -n nocuda pytorch cython ipython pytest matplotlib h5py pandas pillow protobuf scipy requests tqdm lxml opt_einsum cvxpy
+```
+
 准备如下文件
 
 ```text
@@ -219,3 +224,10 @@ sbatch -o sbatch.stdout sbatch.script
 0: python version: 3.11.3 | packaged by conda-forge | (main, Apr  6 2023, 08:57:19) [GCC 11.3.0]
 0: pytorch version: 2.0.0
 ```
+
+基于今天的使用体验来评价Sugon曙光、paratera超算云、hzw鸿之微
+
+1. 使用体验降序：Sugon > paratera > hzw
+2. paratera超算需要代理方可访问外网，香港访问hzw需要网络代理
+3. hzw不提供GPU，其余二者提供GPU/DCU
+4. UDA/UDP代码均可运行，但未对比运行时间
